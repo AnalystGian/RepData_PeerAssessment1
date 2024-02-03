@@ -7,19 +7,83 @@ output:
 
 
 ## Loading and preprocessing the data
-
-
+```{r loaddata}
+unzip(zipfile="activity.zip")
+data <- read.csv("activity.csv")
+```
 
 ## What is mean total number of steps taken per day?
-
-
+```{r}
+library(ggplot2)
+total.steps <- tapply(data$steps, data$date, FUN=sum, na.rm=TRUE)
+qplot(total.steps, binwidth=1000, xlab="total number of steps taken each day")
+mean(total.steps, na.rm=TRUE)
+median(total.steps, na.rm=TRUE)
+```
 
 ## What is the average daily activity pattern?
-
-
+```{r}
+library(ggplot2)
+averages <- aggregate(x=list(steps=data$steps), by=list(interval=data$interval),
+                      FUN=mean, na.rm=TRUE)
+ggplot(data=averages, aes(x=interval, y=steps)) +
+    geom_line() +
+    xlab("5-minute interval") +
+    ylab("average number of steps taken")
+```
 
 ## Imputing missing values
-
-
+```{r how_many_missing}
+missing <- is.na(data$steps)
+# How many missing
+table(missing)
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+weekday.or.weekend <- function(date) {
+  day <- weekdays(date)
+  if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
+    return("weekday")
+  else if (day %in% c("Saturday", "Sunday"))
+    return("weekend")
+  else
+    stop("invalid date")
+}
+filled.data$date <- as.Date(filled.data$date)
+filled.data <- filled.data %>%
+  mutate(day_type = ifelse(weekdays(date) %in% c("Saturday", "Sunday"), "weekend", "weekday"))
+```
+
+# Load necessary packages
+```{r}
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+library(dplyr)
+```
+
+```{r}
+avg_steps <- filled.data %>%
+  group_by(interval, day_type) %>%
+  summarize(steps = mean(steps, na.rm = TRUE))
+```
+
+# Load ggplot2 if not already loaded
+```{r}
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+```
+
+# Create a panel plot
+```{r}
+ggplot(avg_steps, aes(x = interval, y = steps)) +
+  geom_line(aes(color = day_type), type = "l", size = 1) +
+  facet_grid(day_type ~ ., scales = "free_y") +
+  xlab("5-minute interval") +
+  ylab("Average number of steps taken") +
+  ggtitle("Time Series Plot of Average Steps per 5-Minute Interval") +
+  theme_minimal()
+```
