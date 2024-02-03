@@ -1,5 +1,19 @@
 "Reproducible Research: Peer Assessment 1"
 
+## Setting up working directory
+```{r}
+getwd()
+setwd(dir ="D:/DATA ANALYSTS/R/R Course Directory")
+dir()
+```
+
+## Install necessary packages for loading, pre-processing, and transforming the data.
+```{r setup, include=FALSE}
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+install.packages("tidyverse")
+library(tidyverse)
+```
+
 ## Loading and preprocessing the data
 ```{r loaddata}
 unzip(zipfile="activity.zip")
